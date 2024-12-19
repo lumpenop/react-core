@@ -1,9 +1,16 @@
 // src/main.js
-import App from './App.jsx';
+import App from './App.jsx'
+import render from './utils/render.js'
+const appElement = App()
 
-const appElement = App();
+console.log(JSON.stringify(appElement, null, 2))
 
-console.log(JSON.stringify(appElement, null, 2));
+const rootElement = render(appElement)
+
+console.log(rootElement)
+
+const app = document.getElementById('app')
+app.appendChild(rootElement)
 
 // 출력 결과물, 완전히 같진 않아도 괜찮아요.
 // {
