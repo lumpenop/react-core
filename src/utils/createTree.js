@@ -1,4 +1,4 @@
-import createElement from './createElement.js'
+import createElement from './jsx/createElement.js'
 
 const parser = new DOMParser()
 const regex = /<(\w+)[^<>]*>[\s\S]*<\/\1>/
@@ -36,7 +36,7 @@ const getElementProperties = JSXElementString => {
 
 const createTree = JSXElementString => {
   const JSXCode = JSXElementString.trim()
-  console.log(JSXCode)
+
   if (!checkHasTag(JSXCode)) return JSXCode
   const { type, props, children } = getElementProperties(JSXCode)
 
