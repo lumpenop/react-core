@@ -1,16 +1,51 @@
 // src/App.jsx
-import createTree from './utils/createTree.js'
+import List from './List.jsx'
+import React from './utils/react.js'
 
 function App() {
-  const jsxString = `
+  const [count, increment] = React.useState(0)
+  const [value, setValue] = React.useState('')
+  const [list, setList] = React.useState([])
+
+  const handleAdd = () => {
+    if (!value) return
+    setList(prevList => [...prevList, { value, check: false }])
+    setValue('')
+  }
+
+  const handleCheck = index => {
+    setList(prevList => prevList.map((item, i) => (i === index ? { ...item, check: !item.check } : item)))
+  }
+
+  return (
     <div prop="prop">
       <div>
-        <h1>Hello, React Clone!</h1>
-        <p>hi</p>
+        <h1>Hello, React Clone! {count}</h1>
+        <button type="button" onClick={() => increment(prev => prev + 1)}>
+          증가
+        </button>
+      </div>
+      <div>
+        <input autoFocus={false} type="text" value={value} onChange={e => setValue(e.target.value)} />
+        <button type="button" onClick={handleAdd}>
+          확인
+        </button>
+      </div>
+      <div>
+        <ul>
+          {list.map((item, index) => {
+            return (
+              <li key={index}>
+                {item.value}
+                <input type="checkbox" checked={item.check} onChange={() => handleCheck(index)} />
+              </li>
+            )
+          })}
+        </ul>
+        <List list={list} />
       </div>
     </div>
-  `
-  return createTree(jsxString)
+  )
 }
 
 export default App
