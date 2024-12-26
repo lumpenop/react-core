@@ -9,8 +9,10 @@ const rootElement = React.renderComponent(App)
 app.appendChild(rootElement)
 
 // 상태 변경 시 재렌더링을 위한 리스너 등록
-React.subscribe(() => {
+const unsubscribe = React.subscribe(() => {
   const newRootElement = React.renderComponent(App)
   app.innerHTML = ''
   app.appendChild(newRootElement)
 })
+
+React.subscribe(() => {})

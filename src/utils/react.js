@@ -2,20 +2,20 @@ class React {
   states = new Map()
   stateIndex = 0
   listeners = []
+  currentRender = null
 
   constructor() {
     this.currentComponent = null
   }
 
   setState = (index, newState) => {
-    console.log(newState, 'newState')
     const states = this.states.get(this.currentComponent)
     if (typeof newState === 'function') {
       states[index] = newState(states[index])
     } else {
       states[index] = newState
     }
-    this.listeners.forEach(listener => listener())
+    this.listeners.forEach(listener => listener()) // subscribe 함수 호출
   }
 
   subscribe = listener => {
@@ -39,27 +39,30 @@ class React {
     const index = this.stateIndex
     const setState = this.setState.bind(this, index)
 
+    if (!this.currentRender) {
+      this.currentRender = states
+    }
+
     this.stateIndex++
-    return [states[index], setState]
+    return [this.currentRender[index], setState]
+  }
+
+  diff = tree => {
+    console.log(tree, 'tree')
+    return tree
   }
 
   render = tree => {
     const rootElement = document.createElement(tree.type)
-    console.log(tree.type, 'tree')
+    if (tree.type === 'h1') {
+      console.log(tree, 'tree') // + 1
+    }
 
     const { children, onClick, onChange, checked, ...elementProps } = tree.props
 
-    if (onClick) {
-      rootElement.addEventListener('click', onClick)
-    }
-
-    if (onChange) {
-      rootElement.addEventListener('change', e => onChange(e))
-    }
-
-    if (checked) {
-      rootElement.checked = checked
-    }
+    if (onClick) rootElement.addEventListener('click', onClick)
+    if (onChange) rootElement.addEventListener('change', e => onChange(e))
+    if (checked) rootElement.checked = checked
 
     Object.keys(elementProps).forEach(key => {
       rootElement.setAttribute(key, elementProps[key])
@@ -85,9 +88,11 @@ class React {
   }
 
   renderComponent = component => {
-    this.currentComponent = component
+    if (!this.currentComponent) this.currentComponent = component
     this.stateIndex = 0
-    return this.render(component())
+    console.log(this.currentComponent === component, 'this.currentComponent')
+
+    return this.render(component()) // state 가 initialValue 일 때
   }
 }
 

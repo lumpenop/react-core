@@ -4,6 +4,7 @@ import React from './utils/react.js'
 
 function App() {
   const [count, increment] = React.useState(0)
+  const [count2, increment2] = React.useState(0)
   const [value, setValue] = React.useState('')
   const [list, setList] = React.useState([])
 
@@ -17,11 +18,22 @@ function App() {
     setList(prevList => prevList.map((item, i) => (i === index ? { ...item, check: !item.check } : item)))
   }
 
+  const handleClick = () => {
+    console.log(count, 'handleClick count')
+    increment(prev => prev + 1)
+  }
+
   return (
     <div prop="prop">
       <div>
         <h1>Hello, React Clone! {count}</h1>
-        <button type="button" onClick={() => increment(prev => prev + 1)}>
+        <button type="button" onClick={handleClick}>
+          증가
+        </button>
+      </div>
+      <div>
+        <h1>Hello, React Clone! {count2}</h1>
+        <button type="button" onClick={() => increment2(prev => prev + 1)}>
           증가
         </button>
       </div>

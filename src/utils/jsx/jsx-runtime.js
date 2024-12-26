@@ -7,5 +7,6 @@ export const jsx = (type, props) => {
 
 export const jsxs = (type, props) => {
   const { children, ...rest } = props
+
   return createElement(type, { ...rest }, children)
 }
