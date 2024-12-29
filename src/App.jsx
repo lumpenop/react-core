@@ -12,6 +12,7 @@ function App() {
     if (!value) return
     setList(prevList => [...prevList, { value, check: false }])
     setValue('')
+    console.log(list, 'list')
   }
 
   const handleCheck = index => {
@@ -26,19 +27,27 @@ function App() {
   return (
     <div prop="prop">
       <div>
-        <h1>Hello, React Clone! {count}</h1>
+        <h1 prop="prop">Hello, React Clone! {count}</h1>
         <button type="button" onClick={handleClick}>
           증가
         </button>
       </div>
       <div>
-        <h1>Hello, React Clone! {count2}</h1>
-        <button type="button" onClick={() => increment2(prev => prev + 1)}>
+        <h1>Hello, React Clone! {count}</h1>
+        {/* <button type="button" onClick={() => increment2(prev => prev + 1)}>
           증가
-        </button>
+        </button> */}
       </div>
       <div>
-        <input autoFocus={false} type="text" value={value} onChange={e => setValue(e.target.value)} />
+        <input
+          id="myInput"
+          type="text"
+          value={value}
+          onChange={e => {
+            console.log(value, 'value')
+            setValue(e.target.value)
+          }}
+        />
         <button type="button" onClick={handleAdd}>
           확인
         </button>
