@@ -1,5 +1,4 @@
 // src/App.jsx
-import List from './List.jsx'
 import React from './utils/react.js'
 
 function App() {
@@ -9,8 +8,12 @@ function App() {
   const [list, setList] = React.useState([])
 
   React.useEffect(() => {
-    console.log(count, 'count')
+    console.log(count, 'count value')
   }, [value])
+
+  React.useEffect(() => {
+    console.log(count, 'count count')
+  }, [count])
 
   const handleAdd = () => {
     if (!value) return
@@ -27,45 +30,9 @@ function App() {
   }
 
   return (
-    <div prop="prop">
-      <div>
-        <h1 prop="prop">Hello, React Clone! {count}</h1>
-        <button type="button" onClick={handleClick}>
-          증가
-        </button>
-      </div>
-      <div>
-        <h1>Hello, React Clone! {count}</h1>
-        {/* <button type="button" onClick={() => increment2(prev => prev + 1)}>
-          증가
-        </button> */}
-      </div>
-      <div>
-        <input
-          id="myInput"
-          type="text"
-          value={value}
-          onChange={e => {
-            setValue(e.target.value)
-          }}
-        />
-        <button type="button" onClick={handleAdd}>
-          확인
-        </button>
-      </div>
-      <div>
-        <ul>
-          {list.map((item, index) => {
-            return (
-              <li key={index}>
-                {item.value}
-                <input type="checkbox" checked={item.check} onChange={() => handleCheck(index)} />
-              </li>
-            )
-          })}
-        </ul>
-        <List list={list} />
-      </div>
+    <div class="bg-purple-300 w-full h-screen">
+      <h1 class="text-white bg-black">Survey</h1>
+      <div class="bg-white bg-black">hi</div>
     </div>
   )
 }
