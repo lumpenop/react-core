@@ -1,20 +1,35 @@
 // src/main.js
-import App from './App.jsx';
+import App from './App.jsx'
+import React from './utils/react.js'
 
-const appElement = App();
+// 초기 렌더링
 
-console.log(JSON.stringify(appElement, null, 2));
+const app = document.getElementById('app')
+const rootElement = React.renderComponent(App)
+const { eventListeners } = React
+const eventsObj = {}
 
-// 출력 결과물, 완전히 같진 않아도 괜찮아요.
-// {
-//   "type": "div",
-//   "props": {
-//     "id": "app",
-//     "children": {
-//       "type": "h1",
-//       "props": {
-//         "children": "Hello, React Clone!"
-//       }
-//     }
-//   }
-// }
+eventListeners.forEach(listener => (eventsObj[listener.event] = []))
+eventListeners.forEach(listener =>
+  eventsObj[listener.event].push({ target: listener.target, listener: listener.listener })
+)
+
+const eventKeys = Object.keys(eventsObj)
+eventKeys.forEach(event => {
+  console.log(event, 'event')
+  app.addEventListener(`${event}`, e => {
+    eventsObj[event].forEach(listener => {
+      if (listener.target === e.target) {
+        listener.listener(e)
+      }
+    })
+  })
+})
+
+app.appendChild(rootElement)
+// 상태 변경 시 재렌더링을 위한 리스너 등록
+const unsubscribe = React.subscribe(() => {
+  const newRootElement = React.renderComponent(App)
+})
+
+React.subscribe(() => {})
