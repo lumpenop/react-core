@@ -1,6 +1,7 @@
 // src/App.jsx
 import Button from './components/button.jsx'
 import Checkbox from './components/checkbox.jsx'
+import ClearButton from './components/clear-button.jsx'
 import Header from './components/header.jsx'
 import Layout from './components/layout.jsx'
 import Radio from './components/radio.jsx'
@@ -38,6 +39,20 @@ function App() {
     setPage(2)
   }
 
+  const handleClear = () => {
+    window.localStorage.removeItem('data')
+    setRadio('')
+    setChecked(
+      new Map([
+        ['checkbox1', false],
+        ['checkbox2', false],
+        ['checkbox3', false],
+      ])
+    )
+    setSelect('')
+    setText('')
+  }
+
   if (page === 1)
     return (
       <SecondPage
@@ -47,6 +62,7 @@ function App() {
         setSelect={setSelect}
         text={text}
         setText={setText}
+        handleClear={handleClear}
       />
     )
   if (page === 2) return <SuccessPage setPage={setPage} />
@@ -57,7 +73,10 @@ function App() {
       <Header />
       <Radio value={radio} setRadio={setRadio} />
       <Checkbox checked={checked} setChecked={setChecked} />
-      <Button onClick={() => setPage(page + 1)} text="다음" />
+      <div class="flex justify-between w-4/5">
+        <Button onClick={() => setPage(page + 1)} text="다음" />
+        <ClearButton handleClear={handleClear} />
+      </div>
     </Layout>
   )
 }

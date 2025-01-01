@@ -1,9 +1,10 @@
 import Button from './components/button.jsx'
+import ClearButton from './components/clear-button.jsx'
 import Header from './components/header.jsx'
 import Layout from './components/layout.jsx'
 import SectionLayout from './components/section-layout.jsx'
 import React from './utils/react.js'
-function SecondPage({ setPage, onSubmit, select, setSelect, text, setText }) {
+function SecondPage({ setPage, onSubmit, select, setSelect, text, setText, handleClear }) {
   return (
     <Layout>
       <Header />
@@ -24,10 +25,12 @@ function SecondPage({ setPage, onSubmit, select, setSelect, text, setText }) {
         <p>textarea</p>
         <textarea value={text} onChange={e => setText(e.target.value)} />
       </SectionLayout>
-
-      <div class="flex gap-4">
-        <Button onClick={() => setPage(prev => prev - 1)} text="이전" />
-        <Button onClick={onSubmit} text="제출" />
+      <div>
+        <div class="flex gap-4">
+          <Button onClick={() => setPage(prev => prev - 1)} text="이전" />
+          <Button onClick={onSubmit} text="제출" />
+        </div>
+        <ClearButton handleClear={handleClear} />
       </div>
     </Layout>
   )
