@@ -1,9 +1,11 @@
 import SectionLayout from './section-layout'
 
 function Radio({ value, setRadio }) {
-  console.log(value, 'value')
   return (
     <SectionLayout>
+      <h2>
+        radio <span class="text-red-400">*</span>
+      </h2>
       <form action="" class="flex flex-col gap-2">
         <div class="flex items-center gap-2">
           <input

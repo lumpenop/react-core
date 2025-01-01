@@ -21,21 +21,27 @@ function App() {
   )
   const [select, setSelect] = React.useState('')
   const [text, setText] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const [passwordConfirm, setPasswordConfirm] = React.useState('')
 
   React.useEffect(() => {
     const data = window.localStorage.getItem('data')
     if (data) {
       const parsedData = JSON.parse(data)
-      console.log(parsedData, 'parsedData')
       setRadio(() => parsedData.radio)
       setChecked(new Map(parsedData.checked))
       setSelect(parsedData.select)
       setText(parsedData.text)
+      setPassword(parsedData.password)
+      setPasswordConfirm(parsedData.passwordConfirm)
     }
   }, [])
 
   const onSubmit = () => {
-    window.localStorage.setItem('data', JSON.stringify({ radio, checked: Array.from(checked.entries()), select, text }))
+    window.localStorage.setItem(
+      'data',
+      JSON.stringify({ radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm })
+    )
     setPage(2)
   }
 
@@ -51,6 +57,8 @@ function App() {
     )
     setSelect('')
     setText('')
+    setPassword('')
+    setPasswordConfirm('')
   }
 
   if (page === 1)
@@ -62,19 +70,26 @@ function App() {
         setSelect={setSelect}
         text={text}
         setText={setText}
+        password={password}
+        setPassword={setPassword}
+        passwordConfirm={passwordConfirm}
+        setPasswordConfirm={setPasswordConfirm}
         handleClear={handleClear}
       />
     )
   if (page === 2) return <SuccessPage setPage={setPage} />
 
-  console.log(radio, 'radio')
   return (
     <Layout>
       <Header />
       <Radio value={radio} setRadio={setRadio} />
       <Checkbox checked={checked} setChecked={setChecked} />
       <div class="flex justify-between w-4/5">
-        <Button onClick={() => setPage(page + 1)} text="다음" />
+        <Button
+          onClick={() => setPage(page + 1)}
+          text="다음"
+          disabled={!radio || Array.from(checked.values()).every(value => value === false)}
+        />
         <ClearButton handleClear={handleClear} />
       </div>
     </Layout>

@@ -153,7 +153,7 @@ class React {
       element: rootElement,
     }
 
-    const { children, checked, value, ...elementProps } = tree.props
+    const { children, checked, value, disabled, ...elementProps } = tree.props
 
     const eventProps = Object.keys(elementProps).filter(prop => prop.startsWith('on'))
     const otherProps = Object.keys(elementProps).filter(prop => !prop.startsWith('on'))
@@ -169,11 +169,12 @@ class React {
     // }
     // if (onChange) rootElement.addEventListener('change', e => onChange(e))
     if (checked) rootElement.checked = checked
-    if (tree.type === 'select') {
-    }
+
     if (value !== undefined) {
       rootElement.value = value
     }
+
+    if (disabled) rootElement.disabled = Boolean(disabled)
     otherProps.forEach(key => {
       rootElement.setAttribute(key, elementProps[key])
     })

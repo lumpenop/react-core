@@ -1,6 +1,7 @@
-function Button({ onClick, text }) {
+function Button({ onClick, text, disabled }) {
+  const bgColor = disabled ? 'bg-gray-500' : 'bg-purple-500'
   return (
-    <button class="bg-purple-500 text-white p-2 rounded-md" type="button" onClick={onClick}>
+    <button class={`${bgColor} text-white p-2 rounded-md`} type="button" onClick={onClick} disabled={false}>
       {text}
     </button>
   )
