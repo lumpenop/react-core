@@ -1,9 +1,10 @@
 class React {
   states = new Map()
   stateIndex = 0
+  effectIndex = 0
   listeners = []
+  effectListeners = []
   eventListeners = []
-  currentRender = null
   currentComponent = null
   prevVDOM = null
 
@@ -20,7 +21,8 @@ class React {
     } else {
       states[index] = newState
     }
-    this.listeners.forEach(listener => listener()) // subscribe 함수 호출
+    this.listeners.forEach(listener => listener())
+    // this.rerenderComponent(App())
   }
 
   subscribe = listener => {
@@ -28,6 +30,26 @@ class React {
     return () => {
       this.listeners = this.listeners.filter(l => l !== listener)
     }
+  }
+
+  useEffect = (effect, deps) => {
+    if (!deps) {
+      effect()
+      return
+    }
+    if (!this.effectListeners[this.effectIndex]) {
+      this.effectListeners.push({ effect, deps })
+      effect()
+    } else {
+      console.log('hi')
+      const { effect: prevEffect, deps: prevDeps } = this.effectListeners[this.effectIndex]
+
+      if (prevDeps.some((dep, index) => dep !== deps[index])) {
+        this.effectListeners[this.effectIndex] = { effect, deps }
+        prevEffect()
+      }
+    }
+    this.effectIndex++
   }
 
   useState = initialValue => {
@@ -44,49 +66,53 @@ class React {
     const index = this.stateIndex
     const setState = this.setState.bind(this, index)
 
-    if (!this.currentRender) {
-      this.currentRender = states
-    }
-
     this.stateIndex++
-    return [this.currentRender[index], setState]
+    return [states[index], setState]
   }
 
   diff = (currentTree, prevTree, currentTarget = [], prevTarget = []) => {
     if (currentTree === prevTree) return { isChanged: false }
-    const { type: currentType, props: currentProps, childrenNode: currentChildrenNode } = currentTree
-    const { type: prevType, props: prevProps, childrenNode: prevChildrenNode } = prevTree
-
-    if (currentType !== prevType) {
-      return {
-        isChanged: true,
-        currentTarget: [{ changeType: 'replace', element: currentTree.element }],
-        prevTarget: [{ changeType: 'replace', element: prevTree.element }],
-      }
-    }
+    const { type: currentType, props: currentProps, element: currentElement } = currentTree
+    const { type: prevType, props: prevProps, element: prevElement } = prevTree
 
     const { children: currentChildren, ...currentRestProps } = currentProps
     const { children: prevChildren, ...prevRestProps } = prevProps
+    if (currentType !== prevType) {
+      return {
+        isChanged: true,
+        currentTarget: [{ changeType: 'replace', element: this.render(currentTree) }],
+        prevTarget: [{ changeType: 'replace', element: prevElement }],
+      }
+    }
 
     if (currentChildren.length !== prevChildren.length) {
       return {
         isChanged: true,
-        currentTarget: [{ changeType: 'replace', element: currentTree.element }],
-        prevTarget: [{ changeType: 'replace', element: prevTree.element }],
+        currentTarget: [{ changeType: 'replace', element: this.render(currentTree) }],
+        prevTarget: [{ changeType: 'replace', element: prevElement }],
       }
     }
 
     if (currentChildren) {
-      const isChanged = currentChildren.some((child, index) => {
-        if (typeof child === 'object') return false
+      const notObjectChildren = currentChildren.filter(child => typeof child !== 'object')
+      notObjectChildren.forEach((child, index) => {
         if (child !== prevChildren[index]) {
-          return true
+          const { rootElement, virtualDOM } = this.render(currentTree)
+          currentTarget.push({ changeType: 'innerHTML', element: rootElement })
+          prevTarget.push({ changeType: 'innerHTML', element: prevElement })
         }
       })
-      if (isChanged) {
-        currentTarget.push({ changeType: 'innerHTML', element: currentTree.element })
-        prevTarget.push({ changeType: 'innerHTML', element: prevTree.element })
-      }
+      const objectChildren = currentChildren.filter(child => typeof child === 'object')
+      objectChildren.forEach((child, index) => {
+        if (typeof child === 'object') {
+          this.diff(child, prevChildren[index], currentTarget, prevTarget)
+        }
+        // if (child !== prevChildren[index]) {
+        //   console.log('hi', child, prevChildren[index])
+        //   currentTarget.push({ changeType: 'innerHTML', element: this.render(currentTree) })
+        //   prevTarget.push({ changeType: 'innerHTML', element: prevElement })
+        // }
+      })
     }
 
     const currentPropsKeys = Object.keys(currentRestProps)
@@ -98,21 +124,15 @@ class React {
       .forEach(key => {
         currentTarget.push({
           changeType: 'propsChange',
-          element: currentTree.element,
+          element: this.render(currentTree),
           prop: { key, value: currentRestProps[key] },
         })
         prevTarget.push({
           changeType: 'propsChange',
-          element: prevTree.element,
+          element: prevElement,
           prop: { key, value: prevRestProps[key] },
         })
       })
-
-    if (currentChildrenNode) {
-      currentChildrenNode.forEach((child, index) => {
-        this.diff(child, prevChildrenNode[index], currentTarget, prevTarget)
-      })
-    }
 
     if (currentTarget.length > 0) {
       return { isChanged: true, currentTarget, prevTarget }
@@ -127,7 +147,6 @@ class React {
       type: tree.type,
       props: tree.props,
       element: rootElement,
-      childrenNode: [],
     }
 
     const { children, checked, ...elementProps } = tree.props
@@ -156,9 +175,9 @@ class React {
         if (typeof child !== 'object') {
           rootElement.appendChild(document.createTextNode(child))
         } else {
-          const { rootElement: element, virtualDOM: VDOM } = this.render(child)
+          const { rootElement: element } = this.render(child)
+          child.element = element
           rootElement.appendChild(element)
-          virtualDOM.childrenNode.push(VDOM)
         }
       })
     }
@@ -166,18 +185,11 @@ class React {
     return { rootElement, virtualDOM }
   }
 
-  rerenderComponent = component => {
+  rerenderComponent = componentTree => {
     this.stateIndex = 0
-    return this.diff(component(), this.prevVDOM)
-  }
-
-  renderComponent = component => {
-    if (!this.currentComponent) this.currentComponent = component
-    this.stateIndex = 0
-    const { rootElement, virtualDOM } = this.render(this.currentComponent())
-    if (!this.prevVDOM) this.prevVDOM = virtualDOM
-
-    const { isChanged, currentTarget, prevTarget } = this.diff(virtualDOM, this.prevVDOM)
+    this.currentComponentTree = componentTree
+    console.log(this.currentComponentTree, 'currentComponentTree')
+    const { isChanged, currentTarget, prevTarget } = this.diff(componentTree, this.prevVDOM)
     if (isChanged) {
       prevTarget.forEach((elementObj, index) => {
         if (elementObj.changeType === 'propsChange') {
@@ -187,6 +199,26 @@ class React {
         }
       })
     }
+  }
+
+  renderComponent = componentTree => {
+    if (!this.currentComponentTree) this.currentComponentTree = componentTree
+    this.stateIndex = 0
+    this.effectIndex = 0
+    const { rootElement, virtualDOM } = this.render(componentTree)
+    console.log(virtualDOM, 'virtualDOM')
+    if (!this.prevVDOM) this.prevVDOM = virtualDOM
+
+    // const { isChanged, currentTarget, prevTarget } = this.diff(virtualDOM, this.prevVDOM)
+    // if (isChanged) {
+    //   prevTarget.forEach((elementObj, index) => {
+    //     if (elementObj.changeType === 'propsChange') {
+    //       elementObj.element.setAttribute(elementObj.prop.key, currentTarget[index].prop.value)
+    //     } else {
+    //       elementObj.element.innerHTML = currentTarget[index].element.innerHTML
+    //     }
+    //   })
+    // }
     return rootElement
   }
 }

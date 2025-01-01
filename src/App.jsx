@@ -8,11 +8,14 @@ function App() {
   const [value, setValue] = React.useState('')
   const [list, setList] = React.useState([])
 
+  React.useEffect(() => {
+    console.log(count, 'count')
+  }, [value])
+
   const handleAdd = () => {
     if (!value) return
     setList(prevList => [...prevList, { value, check: false }])
     setValue('')
-    console.log(list, 'list')
   }
 
   const handleCheck = index => {
@@ -20,7 +23,6 @@ function App() {
   }
 
   const handleClick = () => {
-    console.log(count, 'handleClick count')
     increment(prev => prev + 1)
   }
 
@@ -44,7 +46,6 @@ function App() {
           type="text"
           value={value}
           onChange={e => {
-            console.log(value, 'value')
             setValue(e.target.value)
           }}
         />
