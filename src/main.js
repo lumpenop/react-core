@@ -16,7 +16,6 @@ eventListeners.forEach(listener =>
 
 const eventKeys = Object.keys(eventsObj)
 eventKeys.forEach(event => {
-  console.log(event, 'event')
   app.addEventListener(`${event}`, e => {
     eventsObj[event].forEach(listener => {
       if (listener.target === e.target) {
@@ -39,8 +38,8 @@ const unsubscribe = React.subscribe(() => {
   )
 
   const eventKeys = Object.keys(eventsObj)
+
   eventKeys.forEach(event => {
-    console.log(event, 'event')
     app.addEventListener(`${event}`, e => {
       eventsObj[event].forEach(listener => {
         if (listener.target === e.target) {
