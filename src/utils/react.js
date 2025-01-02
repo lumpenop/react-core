@@ -42,14 +42,12 @@ class React {
 
     if (!this.effectListeners[this.effectIndex]) {
       this.effectListeners.push({ effect, deps })
-      // 동기적으로 실행
       effect()
     } else {
       const { effect: prevEffect, deps: prevDeps } = this.effectListeners[this.effectIndex]
 
       if (prevDeps.some((dep, index) => dep !== deps[index])) {
         this.effectListeners[this.effectIndex] = { effect, deps }
-        // 동기적으로 실행
         prevEffect()
       }
     }

@@ -42,7 +42,22 @@ function App() {
       'data',
       JSON.stringify({ radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm })
     )
-    setPage(2)
+
+    fetch('http://localhost:3001', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        data: { radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm },
+      }),
+    })
+      .then(response => response.text())
+      .then(data => {
+        console.log(data)
+        setPage(2)
+      })
+      .catch(error => console.error('Error:', error))
   }
 
   const handleClear = () => {
