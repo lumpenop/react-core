@@ -7,8 +7,8 @@ import Layout from './components/layout.jsx'
 import Radio from './components/radio.jsx'
 import SecondPage from './second-page.jsx'
 import SuccessPage from './success-page.jsx'
+import { localStorage } from './utils/localStorage.js'
 import React from './utils/react.js'
-
 function App() {
   const [page, setPage] = React.useState(0)
   const [radio, setRadio] = React.useState('')
@@ -24,24 +24,25 @@ function App() {
   const [password, setPassword] = React.useState('')
   const [passwordConfirm, setPasswordConfirm] = React.useState('')
 
+  const { getItem, setItem, removeItem } = localStorage('data')
+
+  const stateData = { radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm }
+
   React.useEffect(() => {
-    const data = window.localStorage.getItem('data')
+    const data = getItem()
     if (data) {
-      const parsedData = JSON.parse(data)
-      setRadio(() => parsedData.radio)
-      setChecked(new Map(parsedData.checked))
-      setSelect(parsedData.select)
-      setText(parsedData.text)
-      setPassword(parsedData.password)
-      setPasswordConfirm(parsedData.passwordConfirm)
+      const { radio, checked, select, text, password, passwordConfirm } = JSON.parse(data)
+      setRadio(() => radio)
+      setChecked(new Map(checked))
+      setSelect(select)
+      setText(text)
+      setPassword(password)
+      setPasswordConfirm(passwordConfirm)
     }
   }, [])
 
   const onSubmit = () => {
-    window.localStorage.setItem(
-      'data',
-      JSON.stringify({ radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm })
-    )
+    setItem(JSON.stringify(stateData))
 
     fetch('http://localhost:3001', {
       method: 'POST',
@@ -49,7 +50,7 @@ function App() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        data: { radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm },
+        data: stateData,
       }),
     })
       .then(response => response.text())
@@ -61,7 +62,7 @@ function App() {
   }
 
   const handleClear = () => {
-    window.localStorage.removeItem('data')
+    removeItem()
     setRadio('')
     setChecked(
       new Map([
