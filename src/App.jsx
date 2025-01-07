@@ -7,8 +7,10 @@ import Layout from './components/layout.jsx'
 import Radio from './components/radio.jsx'
 import SecondPage from './second-page.jsx'
 import SuccessPage from './success-page.jsx'
+import { dataFetch } from './utils/apis.js'
 import { localStorage } from './utils/localStorage.js'
 import React from './utils/react.js'
+
 function App() {
   const [page, setPage] = React.useState(0)
   const [radio, setRadio] = React.useState('')
@@ -25,8 +27,9 @@ function App() {
   const [passwordConfirm, setPasswordConfirm] = React.useState('')
 
   const { getItem, setItem, removeItem } = localStorage('data')
-
   const stateData = { radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm }
+
+  const { postData } = dataFetch()
 
   React.useEffect(() => {
     const data = getItem()
@@ -41,24 +44,15 @@ function App() {
     }
   }, [])
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     setItem(JSON.stringify(stateData))
 
-    fetch('http://localhost:3001', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        data: stateData,
-      }),
-    })
-      .then(response => response.text())
-      .then(data => {
-        console.log(data)
-        setPage(2)
-      })
-      .catch(error => console.error('Error:', error))
+    const response = await postData({ 'Content-Type': 'application/json' }, stateData)
+
+    if (response.ok) {
+      console.log('hi')
+      setPage(2)
+    }
   }
 
   const handleClear = () => {
