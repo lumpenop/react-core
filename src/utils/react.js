@@ -10,19 +10,21 @@ class React {
 
   reactEvent = {
     input: 'input',
-    change: 'input',
+    change: 'change',
     click: 'click',
   }
 
   setState = (index, newState) => {
-    const states = this.states.get(this.currentComponent)
-    if (typeof newState === 'function') {
-      states[index] = newState(states[index])
-    } else {
-      states[index] = newState
-    }
-    this.listeners.forEach(listener => listener())
-    // this.rerenderComponent(App())
+    Promise.resolve().then(() => {
+      const states = this.states.get(this.currentComponent)
+      if (typeof newState === 'function') {
+        states[index] = newState(states[index])
+      } else {
+        states[index] = newState
+      }
+
+      this.listeners.forEach(listener => listener())
+    })
   }
 
   subscribe = listener => {
@@ -37,11 +39,11 @@ class React {
       effect()
       return
     }
+
     if (!this.effectListeners[this.effectIndex]) {
       this.effectListeners.push({ effect, deps })
       effect()
     } else {
-      console.log('hi')
       const { effect: prevEffect, deps: prevDeps } = this.effectListeners[this.effectIndex]
 
       if (prevDeps.some((dep, index) => dep !== deps[index])) {
@@ -149,7 +151,7 @@ class React {
       element: rootElement,
     }
 
-    const { children, checked, ...elementProps } = tree.props
+    const { children, checked, value, disabled, ...elementProps } = tree.props
 
     const eventProps = Object.keys(elementProps).filter(prop => prop.startsWith('on'))
     const otherProps = Object.keys(elementProps).filter(prop => !prop.startsWith('on'))
@@ -166,6 +168,11 @@ class React {
     // if (onChange) rootElement.addEventListener('change', e => onChange(e))
     if (checked) rootElement.checked = checked
 
+    if (value !== undefined) {
+      rootElement.value = value
+    }
+
+    if (disabled) rootElement.disabled = Boolean(disabled)
     otherProps.forEach(key => {
       rootElement.setAttribute(key, elementProps[key])
     })
@@ -188,7 +195,7 @@ class React {
   rerenderComponent = componentTree => {
     this.stateIndex = 0
     this.currentComponentTree = componentTree
-    console.log(this.currentComponentTree, 'currentComponentTree')
+
     const { isChanged, currentTarget, prevTarget } = this.diff(componentTree, this.prevVDOM)
     if (isChanged) {
       prevTarget.forEach((elementObj, index) => {
@@ -206,7 +213,7 @@ class React {
     this.stateIndex = 0
     this.effectIndex = 0
     const { rootElement, virtualDOM } = this.render(componentTree)
-    console.log(virtualDOM, 'virtualDOM')
+
     if (!this.prevVDOM) this.prevVDOM = virtualDOM
 
     // const { isChanged, currentTarget, prevTarget } = this.diff(virtualDOM, this.prevVDOM)

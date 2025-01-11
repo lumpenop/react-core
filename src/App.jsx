@@ -1,72 +1,108 @@
 // src/App.jsx
-import List from './List.jsx'
+import Button from './components/button.jsx'
+import Checkbox from './components/checkbox.jsx'
+import ClearButton from './components/clear-button.jsx'
+import Header from './components/header.jsx'
+import Layout from './components/layout.jsx'
+import Radio from './components/radio.jsx'
+import SecondPage from './second-page.jsx'
+import SuccessPage from './success-page.jsx'
+import { dataFetch } from './utils/apis.js'
+import { localStorage } from './utils/localStorage.js'
 import React from './utils/react.js'
 
 function App() {
-  const [count, increment] = React.useState(0)
-  const [count2, increment2] = React.useState(0)
-  const [value, setValue] = React.useState('')
-  const [list, setList] = React.useState([])
+  const [page, setPage] = React.useState(0)
+  const [radio, setRadio] = React.useState('')
+  const [checked, setChecked] = React.useState(
+    new Map([
+      ['checkbox1', false],
+      ['checkbox2', false],
+      ['checkbox3', false],
+    ])
+  )
+  const [select, setSelect] = React.useState('')
+  const [text, setText] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const [passwordConfirm, setPasswordConfirm] = React.useState('')
+
+  const { getItem, setItem, removeItem } = localStorage('data')
+  const stateData = { radio, checked: Array.from(checked.entries()), select, text, password, passwordConfirm }
+
+  const { postData } = dataFetch()
 
   React.useEffect(() => {
-    console.log(count, 'count')
-  }, [value])
+    const data = getItem()
+    if (data) {
+      const { radio, checked, select, text, password, passwordConfirm } = JSON.parse(data)
+      setRadio(() => radio)
+      setChecked(new Map(checked))
+      setSelect(select)
+      setText(text)
+      setPassword(password)
+      setPasswordConfirm(passwordConfirm)
+    }
+  }, [])
 
-  const handleAdd = () => {
-    if (!value) return
-    setList(prevList => [...prevList, { value, check: false }])
-    setValue('')
+  const onSubmit = async () => {
+    setItem(JSON.stringify(stateData))
+
+    const response = await postData({ 'Content-Type': 'application/json' }, stateData)
+
+    if (response.ok) {
+      console.log('hi')
+      setPage(2)
+    }
   }
 
-  const handleCheck = index => {
-    setList(prevList => prevList.map((item, i) => (i === index ? { ...item, check: !item.check } : item)))
+  const handleClear = () => {
+    removeItem()
+    setRadio('')
+    setChecked(
+      new Map([
+        ['checkbox1', false],
+        ['checkbox2', false],
+        ['checkbox3', false],
+      ])
+    )
+    setSelect('')
+    setText('')
+    setPassword('')
+    setPasswordConfirm('')
   }
 
-  const handleClick = () => {
-    increment(prev => prev + 1)
-  }
+  if (page === 1)
+    return (
+      <SecondPage
+        setPage={setPage}
+        onSubmit={onSubmit}
+        select={select}
+        setSelect={setSelect}
+        text={text}
+        setText={setText}
+        password={password}
+        setPassword={setPassword}
+        passwordConfirm={passwordConfirm}
+        setPasswordConfirm={setPasswordConfirm}
+        handleClear={handleClear}
+      />
+    )
+  if (page === 2) return <SuccessPage setPage={setPage} />
 
   return (
-    <div prop="prop">
-      <div>
-        <h1 prop="prop">Hello, React Clone! {count}</h1>
-        <button type="button" onClick={handleClick}>
-          증가
-        </button>
-      </div>
-      <div>
-        <h1>Hello, React Clone! {count}</h1>
-        {/* <button type="button" onClick={() => increment2(prev => prev + 1)}>
-          증가
-        </button> */}
-      </div>
-      <div>
-        <input
-          id="myInput"
-          type="text"
-          value={value}
-          onChange={e => {
-            setValue(e.target.value)
-          }}
+    <Layout>
+      <Header />
+      <Radio value={radio} setRadio={setRadio} />
+      <Checkbox checked={checked} setChecked={setChecked} />
+      <div class="flex justify-between w-4/5">
+        <Button
+          onClick={() => setPage(page + 1)}
+          text="다음"
+          disabled={!radio || Array.from(checked.values()).every(value => value === false)}
         />
-        <button type="button" onClick={handleAdd}>
-          확인
-        </button>
+        <ClearButton handleClear={handleClear} />
       </div>
-      <div>
-        <ul>
-          {list.map((item, index) => {
-            return (
-              <li key={index}>
-                {item.value}
-                <input type="checkbox" checked={item.check} onChange={() => handleCheck(index)} />
-              </li>
-            )
-          })}
-        </ul>
-        <List list={list} />
-      </div>
-    </div>
+    </Layout>
   )
 }
 
